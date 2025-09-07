@@ -3,235 +3,96 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ABC Phonics - Bacchon ke liye</title>
+  <title>ABC Phonics - बच्चों के लिए</title>
   <style>
-    :root{
-      --bg: #fff9f0;
-      --card: #ffffff;
-      --accent: #ff7a59;
-      --muted: #666;
-      --shadow: 0 6px 18px rgba(0,0,0,0.08);
-      --radius: 12px;
-    }
-    *{box-sizing:border-box}
-    body{font-family: "Noto Sans", "Segoe UI", Roboto, Arial; margin:0; background:var(--bg); color:#222}
+    body{font-family:"Noto Sans","Segoe UI",Roboto,Arial;margin:0;background:#fff9f0;color:#222}
     header{background:linear-gradient(90deg,#ffd54f,#ffb74d);padding:18px;text-align:center;border-bottom:4px solid #ffd54f}
     header h1{margin:0;font-size:1.5rem}
-    .topbar{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;padding:12px;align-items:center}
-    .topbar select, .topbar button, .topbar label{font-size:0.95rem;padding:8px;border-radius:8px;border:1px solid #e6e6e6;background:#fff}
-    .controls{max-width:1100px;margin:12px auto;padding:0 12px}
     .grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;padding:12px;max-width:1100px;margin:0 auto}
-    .card{background:var(--card);border-radius:var(--radius);padding:14px;text-align:center;box-shadow:var(--shadow);cursor:pointer;transition:transform .12s ease, box-shadow .12s}
+    .card{background:#fff;border-radius:12px;padding:14px;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,0.08);cursor:pointer;transition:transform .12s ease}
     .card:active{transform:translateY(3px)}
-    .letter{font-size:2.1rem;font-weight:800;color:var(--accent)}
+    .letter{font-size:2.1rem;font-weight:800;color:#ff7a59}
     .emoji{font-size:2.4rem;margin:10px 0}
     .word{font-size:1.05rem;margin-top:6px;color:#333}
-    .playbtn{margin-top:8px;padding:8px 10px;border-radius:8px;border:0;background:var(--accent);color:#fff;cursor:pointer}
-    footer{padding:16px;text-align:center;color:var(--muted);font-size:.95rem}
-    .row{display:flex;gap:8px;align-items:center}
-    .small{font-size:0.85rem;color:var(--muted)}
-    @media (max-width:1000px){ .grid{grid-template-columns:repeat(4,1fr)} }
-    @media (max-width:640px){ .grid{grid-template-columns:repeat(2,1fr)} .topbar{flex-direction:column} }
+    .playbtn{margin-top:8px;padding:8px 10px;border-radius:8px;border:0;background:#ff7a59;color:#fff;cursor:pointer}
+    @media (max-width:1000px){.grid{grid-template-columns:repeat(4,1fr)}}
+    @media (max-width:640px){.grid{grid-template-columns:repeat(2,1fr)}}
   </style>
 </head>
 <body>
   <header>
-    <h1>अक्षर और ध्वनि — A se Z (बच्चों के लिए)</h1>
+    <h1>अक्षर और ध्वनि — A to Z (बच्चों के लिए)</h1>
   </header>
 
-  <div class="controls">
-    <div class="topbar" style="justify-content:space-between;max-width:1100px;margin:0 auto;">
-      <div class="row">
-        भाषा:
-        <select id="langSelect" title="Select language">
-          <option value="hi">हिन्दी</option>
-          <option value="en">English</option>
-        </select>
-
-        वॉइस:
-        <select id="voiceSelect" title="Choose voice"></select>
-
-        <button id="testBtn" class="playbtn">Test</button>
-      </div>
-
-      <div class="row">
-        <label style="display:flex;align-items:center;gap:6px">
-          <input type="checkbox" id="useRecorded"> Use recorded audio files (optional)
-        </label>
-        <span class="small">Recorded audio files expected at <code>audio/A.mp3</code> ... <code>audio/Z.mp3</code></span>
-      </div>
-    </div>
-  </div>
-
-  <main class="grid" id="grid" aria-live="polite"></main>
-
-  <footer>
-    यह prototype browser की Text-to-Speech का उपयोग करता है। अगर आप recorded audio देना चाहते हैं तो files `audio/A.mp3` ... `audio/Z.mp3` रख कर "Use recorded audio files" चेक करें।
-  </footer>
+  <main class="grid" id="grid"></main>
 
 <script>
-/*
-  Alphabet app single-file prototype
-  - By default uses emoji icons and browser SpeechSynthesis
-  - If you add recorded audio files (audio/A.mp3 ... audio/Z.mp3)
-    and enable "Use recorded audio files", the app will try to play them.
-  - Customize words/images below.
-*/
-
 const letters = [
-  {l:'A', emoji:'🍎', hi:'सेव', en:'apple', audio:'A.mp3'},
-  {l:'B', emoji:'⚽️', hi:'गेंद', en:'ball', audio:'B.mp3'},
-  {l:'C', emoji:'🐱', hi:'बिल्ली', en:'cat', audio:'C.mp3'},
-  {l:'D', emoji:'🐶', hi:'कुत्ता', en:'dog', audio:'D.mp3'},
-  {l:'E', emoji:'🐘', hi:'हाथी', en:'elephant', audio:'E.mp3'},
-  {l:'F', emoji:'🐟', hi:'मछली', en:'fish', audio:'F.mp3'},
-  {l:'G', emoji:'🍇', hi:'अंगूर', en:'grapes', audio:'G.mp3'},
-  {l:'H', emoji:'🐔', hi:'मुर्गी', en:'hen', audio:'H.mp3'},
-  {l:'I', emoji:'🍨', hi:'आइस-क्रीम', en:'ice-cream', audio:'I.mp3'},
-  {l:'J', emoji:'🫗', hi:'जुग', en:'jug', audio:'J.mp3'},
-  {l:'K', emoji:'🪁', hi:'पतंग', en:'kite', audio:'K.mp3'},
-  {l:'L', emoji:'🦁', hi:'शेर', en:'lion', audio:'L.mp3'},
-  {l:'M', emoji:'🐒', hi:'बंदर', en:'monkey', audio:'M.mp3'},
-  {l:'N', emoji:'🪺', hi:'घोंसला', en:'nest', audio:'N.mp3'},
-  {l:'O', emoji:'🍊', hi:'संतरा', en:'orange', audio:'O.mp3'},
-  {l:'P', emoji:'🦚', hi:'मोर', en:'peacock', audio:'P.mp3'},
-  {l:'Q', emoji:'👸', hi:'रानी', en:'queen', audio:'Q.mp3'},
-  {l:'R', emoji:'🌹', hi:'गुलाब', en:'rose', audio:'R.mp3'},
-  {l:'S', emoji:'🦢', hi:'हंस', en:'swan', audio:'S.mp3'},
-  {l:'T', emoji:'☎️', hi:'टेलीफोन', en:'telephone', audio:'T.mp3'},
-  {l:'U', emoji:'☂️', hi:'छाता', en:'umbrella', audio:'U.mp3'},
-  {l:'V', emoji:'🚐', hi:'वैन', en:'van', audio:'V.mp3'},
-  {l:'W', emoji:'⌚', hi:'घड़ी', en:'watch', audio:'W.mp3'},
-  {l:'X', emoji:'🎼', hi:'ज़ाइलोफोन', en:'xylophone', audio:'X.mp3'},
-  {l:'Y', emoji:'⛵', hi:'यॉट', en:'yacht', audio:'Y.mp3'},
-  {l:'Z', emoji:'🦓', hi:'ज़ेब्रा', en:'zebra', audio:'Z.mp3'}
+  {l:'A', emoji:'🍎', hi:'सेव', en:'Apple'},
+  {l:'B', emoji:'⚽️', hi:'गेंद', en:'Ball'},
+  {l:'C', emoji:'🐱', hi:'बिल्ली', en:'Cat'},
+  {l:'D', emoji:'🐶', hi:'कुत्ता', en:'Dog'},
+  {l:'E', emoji:'🐘', hi:'हाथी', en:'Elephant'},
+  {l:'F', emoji:'🐟', hi:'मछली', en:'Fish'},
+  {l:'G', emoji:'🍇', hi:'अंगूर', en:'Grapes'},
+  {l:'H', emoji:'🐔', hi:'मुर्गी', en:'Hen'},
+  {l:'I', emoji:'🍨', hi:'आइस-क्रीम', en:'Ice-cream'},
+  {l:'J', emoji:'🫗', hi:'जग', en:'Jug'},
+  {l:'K', emoji:'🪁', hi:'पतंग', en:'Kite'},
+  {l:'L', emoji:'🦁', hi:'शेर', en:'Lion'},
+  {l:'M', emoji:'🐒', hi:'बंदर', en:'Monkey'},
+  {l:'N', emoji:'🪺', hi:'घोंसला', en:'Nest'},
+  {l:'O', emoji:'🍊', hi:'संतरा', en:'Orange'},
+  {l:'P', emoji:'🦚', hi:'मोर', en:'Peacock'},
+  {l:'Q', emoji:'👸', hi:'रानी', en:'Queen'},
+  {l:'R', emoji:'🌹', hi:'गुलाब', en:'Rose'},
+  {l:'S', emoji:'🦢', hi:'हंस', en:'Swan'},
+  {l:'T', emoji:'☎️', hi:'टेलीफोन', en:'Telephone'},
+  {l:'U', emoji:'☂️', hi:'छाता', en:'Umbrella'},
+  {l:'V', emoji:'🚐', hi:'वैन', en:'Van'},
+  {l:'W', emoji:'⌚', hi:'घड़ी', en:'Watch'},
+  {l:'X', emoji:'🎼', hi:'ज़ाइलोफोन', en:'Xylophone'},
+  {l:'Y', emoji:'⛵', hi:'नाव', en:'Yacht'},
+  {l:'Z', emoji:'🦓', hi:'ज़ेब्रा', en:'Zebra'}
 ];
 
 const grid = document.getElementById('grid');
-const langSelect = document.getElementById('langSelect');
-const voiceSelect = document.getElementById('voiceSelect');
-const testBtn = document.getElementById('testBtn');
-const useRecorded = document.getElementById('useRecorded');
 
 function createCard(item){
   const el = document.createElement('div');
   el.className = 'card';
-  el.setAttribute('role','button');
-  el.setAttribute('tabindex','0');
   el.innerHTML = `
     <div class="letter">${item.l}</div>
-    <div class="emoji" aria-hidden="true">${item.emoji}</div>
-    <div class="word" data-hi="${item.hi}" data-en="${item.en}">${item.hi}</div>
-    <button class="playbtn" aria-label="Suno ${item.l}">🔊 सुनो</button>
+    <div class="emoji">${item.emoji}</div>
+    <div class="word">${item.en} (${item.hi})</div>
+    <button class="playbtn">🔊 सुनो</button>
   `;
-  // Click handlers on both card and the button
   el.querySelector('.playbtn').addEventListener('click', (ev)=>{
     ev.stopPropagation();
     playItem(item);
   });
-  el.addEventListener('click', ()=>playItem(item));
-  el.addEventListener('keypress', (e)=>{ if(e.key === 'Enter' || e.key === ' ') playItem(item); });
   return el;
 }
 
 letters.forEach(it => grid.appendChild(createCard(it)));
 
 function speakText(text, lang){
-  if(!('speechSynthesis' in window)) {
-    alert('Aapke browser mein Text-to-Speech available nahi hai. Chrome/Edge ka latest version use karein.');
-    return;
-  }
   const utter = new SpeechSynthesisUtterance(text);
-  const voices = speechSynthesis.getVoices();
-  const sel = voiceSelect.value;
-  if(voices[sel]) utter.voice = voices[sel];
-  utter.lang = lang === 'hi' ? 'hi-IN' : 'en-US';
-  speechSynthesis.cancel();
+  utter.lang = lang;
   speechSynthesis.speak(utter);
 }
 
-function playRecordedAudio(letterObj){
-  // tries to play audio/<filename> relative to this HTML file
-  const base = 'audio/';
-  const file = base + (letterObj.l) + '.mp3'; // expects A.mp3, B.mp3, ...
-  const a = new Audio(file);
-  a.play().catch(err=>{
-    // fallback to TTS if file missing/unplayable
-    console.warn('Recorded audio not playable:', err);
-    const lang = langSelect.value;
-    const text = lang === 'hi' ? letterObj.hi : letterObj.en;
-    speakText(text, lang);
-  });
-}
-
 function playItem(item){
-  const useRec = useRecorded.checked;
-  if(useRec){
-    // attempt recorded, fall back to TTS automatically inside playRecordedAudio
-    playRecordedAudio(item);
-  } else {
-    const lang = langSelect.value;
-    const text = lang === 'hi' ? item.hi : item.en;
-    // Optionally prepend letter name: "A for Apple" in English or "A matlab Apple, Apple = सेव" in Hindi
-    if(lang === 'en'){
-      speakText(`${item.l} for ${text}`, 'en');
-    } else {
-      // Hindi phrasing
-      speakText(`${item.l} matlab ${text}`, 'hi');
-    }
-  }
+  speechSynthesis.cancel();
+
+  // Step 1: बोलो English word
+  speakText(item.en, "en-US");
+
+  // Step 2: थोड़े gap के बाद हिंदी मतलब बोलो
+  setTimeout(()=>{
+    speakText(`${item.en} मतलब ${item.hi}`, "hi-IN");
+  }, 1000);
 }
-
-/* populate voices */
-function populateVoices(){
-  const voices = speechSynthesis.getVoices();
-  voiceSelect.innerHTML = '';
-  voices.forEach((v, idx) => {
-    const opt = document.createElement('option');
-    opt.value = idx;
-    opt.textContent = `${v.name} — ${v.lang}`;
-    voiceSelect.appendChild(opt);
-  });
-  // select a Hindi voice if available when Hindi is selected
-  selectPreferredVoice();
-}
-speechSynthesis.onvoiceschanged = populateVoices;
-populateVoices();
-
-function selectPreferredVoice(){
-  const voices = speechSynthesis.getVoices();
-  const lang = langSelect.value;
-  if(!voices.length) return;
-  // Try to pick first voice that matches lang
-  let idx = voices.findIndex(v => v.lang && v.lang.toLowerCase().startsWith(lang === 'hi' ? 'hi' : 'en'));
-  if(idx === -1) idx = 0;
-  voiceSelect.value = idx;
-}
-
-/* test button */
-testBtn.addEventListener('click', ()=>{
-  const lang = langSelect.value;
-  const text = lang === 'hi' ? 'यह एक परीक्षण है' : 'This is a test';
-  speakText(text, lang);
-});
-
-/* change voice selection when language changes to try to pick matching voice */
-langSelect.addEventListener('change', ()=>{
-  selectPreferredVoice();
-});
-
-/* keyboard accessibility: space/enter already handled on card element */
-
-/* Helpful: Preload recorded audio existence check (non-blocking) */
-function checkAudioFiles(){
-  // Not strictly necessary, but we can mark cards with missing audio if we want.
-  // skipping heavy checks to keep startup fast.
-}
-
-/* init */
-checkAudioFiles();
-
-/* Optional: allow clicking letter to show vocabulary in chosen language in aria-live region */
 </script>
 </body>
-          </html>
+</html>
